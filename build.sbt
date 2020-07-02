@@ -1,40 +1,54 @@
-import Dependencies._
+// cargometrics
 
-ThisBuild / scalaVersion     := "2.12.8"
-ThisBuild / version          := "0.1.0-SNAPSHOT"
-ThisBuild / organization     := "com.example"
-ThisBuild / organizationName := "example"
+javacOptions ++= Seq("-source", "1.8", "-target", "1.8", "-Xlint")
+
 
 lazy val root = (project in file("."))
   .settings(
-    name := "TimeSeriesNoodling",
-    libraryDependencies += scalaTest % Test
+    name := "timeseriesnoodling",
+    version := "0.0.1",
+    scalaVersion := "2.11.8",
+    retrieveManaged := true,
+    libraryDependencies ++= Seq(
+      "org.scala-lang"               %  "scala-reflect"            % scalaVersion.value,
+      "org.apache.spark"             %% "spark-core"               % "2.2.1"    % "provided",
+      "org.apache.spark"             %% "spark-sql"                % "2.2.1"    % "provided",
+      "org.apache.hadoop"            %  "hadoop-aws"               % "2.8.3"    % "provided",
+      "org.apache.spark"             %% "spark-mllib"              % "2.3.1"    % "provided",
+      "com.rockymadden.stringmetric" %% "stringmetric-core"        % "0.27.4",
+      "com.github.fommil.netlib"     %  "all"                      % "1.1.2" ,
+      "org.scalactic"                %% "scalactic"                % "3.0.5",
+      "org.apache.spark"             %% "spark-mllib"              % "2.3.1"    % "test",
+      "com.amazonaws"                %  "aws-java-sdk-glue"        % "1.11.470" % "test",
+      "com.amazonaws"                %  "aws-java-sdk"             % "1.11.470" % "test",
+      "org.scalatest"                %% "scalatest"                % "3.0.5"    % "test",
+      // https://mvnrepository.com/artifact/com.cloudera.sparkts/sparkts
+      "com.cloudera.sparkts"         % "sparkts"                   % "0.4.1",
+      "org.scalanlp"                 %% "breeze"                   % "0.12",
+      "org.scalanlp"                 %% "breeze-viz"               % "0.12",
+      "org.threeten"                 % "threeten-extra"            % "0.9",
+      "org.scala-lang.modules"       %% "scala-parser-combinators" % "1.0.4"
+    ),
+    dependencyOverrides ++= Seq(
+      "com.google.code.findbugs"   % "jsr305"                    % "1.3.9",
+      "com.google.guava"           % "guava"                     % "11.0.2",
+      "junit"                      % "junit"                     % "4.8.2",
+      "io.netty"                   % "netty"                     % "3.9.9.Final",
+      "commons-net"                % "commons-net"               % "3.1"
+    ),
+    scalacOptions := Seq(
+      "-unchecked",
+      "-deprecation",
+      "-feature",
+      "-Xfatal-warnings")
   )
 
-// Uncomment the following for publishing to Sonatype.
-// See https://www.scala-sbt.org/1.x/docs/Using-Sonatype.html for more detail.
 
-// ThisBuild / description := "Some descripiton about your project."
-// ThisBuild / licenses    := List("Apache 2" -> new URL("http://www.apache.org/licenses/LICENSE-2.0.txt"))
-// ThisBuild / homepage    := Some(url("https://github.com/example/project"))
-// ThisBuild / scmInfo := Some(
-//   ScmInfo(
-//     url("https://github.com/your-account/your-project"),
-//     "scm:git@github.com:your-account/your-project.git"
-//   )
-// )
-// ThisBuild / developers := List(
-//   Developer(
-//     id    = "Your identifier",
-//     name  = "Your Name",
-//     email = "your@email",
-//     url   = url("http://your.url")
-//   )
-// )
-// ThisBuild / pomIncludeRepository := { _ => false }
-// ThisBuild / publishTo := {
-//   val nexus = "https://oss.sonatype.org/"
-//   if (isSnapshot.value) Some("snapshots" at nexus + "content/repositories/snapshots")
-//   else Some("releases" at nexus + "service/local/staging/deploy/maven2")
-// }
-// ThisBuild / publishMavenStyle := true
+publishArtifact in (Test, packageSrc) := true
+
+assemblyMergeStrategy in assembly := {
+  case PathList("META-INF", "native", xs @ _*) => MergeStrategy.singleOrError
+  case PathList("META-INF", xs @ _*) => MergeStrategy.discard
+  case PathList("com", "amazonaws", xs @ _*) => MergeStrategy.last
+  case x => MergeStrategy.first
+}
